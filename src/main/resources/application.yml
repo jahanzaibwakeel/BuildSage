@@ -35,6 +35,9 @@ management:
       probes:
         enabled: true
       show-details: when_authorized
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:0.10}
 
 springdoc:
   swagger-ui:
@@ -61,6 +64,12 @@ ai:
 webhooks:
   github:
     secret: ${GITHUB_WEBHOOK_SECRET:}
+
+notifications:
+  webhook:
+    enabled: ${NOTIFICATION_WEBHOOK_ENABLED:false}
+    url: ${NOTIFICATION_WEBHOOK_URL:}
+    secret: ${NOTIFICATION_WEBHOOK_SECRET:}
 
 logging:
   pattern:

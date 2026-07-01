@@ -32,3 +32,18 @@ $env:DOCKER_HOST='npipe:////./pipe/dockerDesktopLinuxEngine'
 ```
 
 This matches the `desktop-linux` Docker context used by Docker Desktop.
+
+## Notification Webhook Is Not Firing
+
+Check:
+
+- `NOTIFICATION_WEBHOOK_ENABLED=true`
+- `NOTIFICATION_WEBHOOK_URL` is reachable from the app container or pod
+- the receiver accepts `Content-Type: application/json`
+- signature verification uses `X-BuildSage-Signature-256` and the same `NOTIFICATION_WEBHOOK_SECRET`
+
+Webhook delivery failures are logged as warnings and do not roll back the durable in-app notification.
+
+## Kubernetes Pod Is Not Ready
+
+Check `/actuator/health/readiness`, database connectivity, Redis/Valkey DNS, and whether the Kubernetes secret contains a valid `JWT_SECRET`. The example manifests assume the image runs as UID `10001`.

@@ -34,6 +34,7 @@ Errors use:
 - `GET /api/projects/{id}/pipeline-runs`
 - `GET /api/pipeline-runs/{id}`
 - `GET /api/pipeline-runs/{id}/logs`
+- `GET /api/pipeline-runs/{id}/logs/archive`
 - `POST /api/pipeline-runs/{id}/analyze`
 - `GET /api/pipeline-runs/{id}/analysis`
 - `GET /api/pipeline-runs/{id}/analysis/queue`
@@ -67,6 +68,20 @@ curl -X POST http://localhost:8080/api/projects/{projectId}/pipeline-runs \
 
 The request body also accepts `logArchiveUri`, which can point to an object-storage location such as `s3://bucket/key`, `gs://bucket/key`, `minio://bucket/key`, or HTTPS. BuildSage stores this URI, the log line count, and a SHA-256 digest of ingested log lines.
 
+`GET /api/pipeline-runs/{id}/logs/archive` returns archive readiness metadata:
+
+```json
+{
+  "pipelineRunId": "30000000-0000-0000-0000-000000000001",
+  "archived": true,
+  "storageProvider": "S3",
+  "archiveUri": "s3://buildsage-demo/logs/run.txt",
+  "digestAlgorithm": "SHA-256",
+  "digestSha256": "abc...",
+  "lineCount": 42
+}
+```
+
 ## Log Search
 
 `GET /api/pipeline-runs/{id}/logs` supports:
@@ -94,3 +109,5 @@ Users can list and mark their own in-app notifications:
 GET /api/notifications
 POST /api/notifications/{id}/read
 ```
+
+When `NOTIFICATION_WEBHOOK_ENABLED=true`, newly created notifications are also delivered to `NOTIFICATION_WEBHOOK_URL` with `X-BuildSage-Event: notification.created`. If `NOTIFICATION_WEBHOOK_SECRET` is configured, BuildSage signs the JSON payload with `X-BuildSage-Signature-256`.

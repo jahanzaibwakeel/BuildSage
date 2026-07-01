@@ -4,6 +4,7 @@ import com.buildsage.api.ApiResponse;
 import com.buildsage.api.PageResponse;
 import com.buildsage.dto.PipelineDtos.AnalysisResponse;
 import com.buildsage.dto.PipelineDtos.CreatePipelineRunRequest;
+import com.buildsage.dto.PipelineDtos.LogArchiveResponse;
 import com.buildsage.dto.PipelineDtos.LogLineResponse;
 import com.buildsage.dto.PipelineDtos.PipelineRunResponse;
 import com.buildsage.dto.PipelineDtos.QueueStatusResponse;
@@ -63,6 +64,11 @@ public class PipelineController {
             return ApiResponse.ok(pipelineService.searchLogs(user, id, query, fromLine, toLine, pageable));
         }
         return ApiResponse.ok(pipelineService.logs(user, id, pageable));
+    }
+
+    @GetMapping("/pipeline-runs/{id}/logs/archive")
+    ApiResponse<LogArchiveResponse> logArchive(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id) {
+        return ApiResponse.ok(pipelineService.logArchive(user, id));
     }
 
     @PostMapping("/pipeline-runs/{id}/analyze")

@@ -7,6 +7,7 @@ import com.buildsage.domain.PipelineLog;
 import com.buildsage.domain.PipelineRun;
 import com.buildsage.dto.PipelineDtos.AnalysisResponse;
 import com.buildsage.dto.PipelineDtos.CreatePipelineRunRequest;
+import com.buildsage.dto.PipelineDtos.LogArchiveResponse;
 import com.buildsage.dto.PipelineDtos.LogLineResponse;
 import com.buildsage.dto.PipelineDtos.PipelineRunResponse;
 import com.buildsage.dto.PipelineDtos.QueueStatusResponse;
@@ -37,6 +38,7 @@ public class PipelineService {
     private final AiAnalysisRepository aiAnalysisRepository;
     private final BackgroundJobRepository backgroundJobRepository;
     private final AnalysisQueueService analysisQueueService;
+    private final LogArchiveService logArchiveService;
     private final AuthorizationService authorizationService;
     private final AuditService auditService;
 
@@ -48,6 +50,7 @@ public class PipelineService {
             AiAnalysisRepository aiAnalysisRepository,
             BackgroundJobRepository backgroundJobRepository,
             AnalysisQueueService analysisQueueService,
+            LogArchiveService logArchiveService,
             AuthorizationService authorizationService,
             AuditService auditService) {
         this.projectService = projectService;
@@ -57,6 +60,7 @@ public class PipelineService {
         this.aiAnalysisRepository = aiAnalysisRepository;
         this.backgroundJobRepository = backgroundJobRepository;
         this.analysisQueueService = analysisQueueService;
+        this.logArchiveService = logArchiveService;
         this.authorizationService = authorizationService;
         this.auditService = auditService;
     }
@@ -140,6 +144,13 @@ public class PipelineService {
         return PageResponse.from(pipelineLogRepository
                 .search(id, blankToNull(query), fromLine, toLine, pageable)
                 .map(log -> new LogLineResponse(log.getLineNumber(), log.getContent())));
+    }
+
+    @Transactional(readOnly = true)
+    public LogArchiveResponse logArchive(CurrentUser user, UUID id) {
+        PipelineRun run = find(id);
+        authorizationService.requireProjectAccess(user, run.getProject().getId());
+        return logArchiveService.describe(run);
     }
 
     @Transactional

@@ -47,6 +47,15 @@ public final class PipelineDtos {
 
     public record LogLineResponse(int lineNumber, String content) {}
 
+    public record LogArchiveResponse(
+            UUID pipelineRunId,
+            boolean archived,
+            String storageProvider,
+            String archiveUri,
+            String digestAlgorithm,
+            String digestSha256,
+            int lineCount) {}
+
     public record AnalysisResponse(
             UUID id,
             AnalysisStatus status,

@@ -21,11 +21,12 @@ Recommended GitHub description: `AI-powered CI/CD intelligence backend in Java 2
 - Idempotent pipeline ingestion through the `Idempotency-Key` header or request body field.
 - GitHub-style signed webhook ingestion with `X-Hub-Signature-256`.
 - Paged log retrieval plus text and line-range log search.
-- Log digest and archive URI metadata for object-storage-backed logs.
+- Log digest and a log archive metadata API for object-storage-backed logs.
 - Async AI analysis queue records with queue status visibility.
 - Mock, Ollama-compatible, and external OpenAI-compatible AI provider modes.
-- In-app notification listing and read-state APIs.
+- In-app notification listing, read-state APIs, and optional outbound notification webhooks.
 - Dashboard metrics for run volume, failure rate, deployment risk, and incidents.
+- Prometheus metrics, OpenTelemetry-ready tracing configuration, and Kubernetes deployment manifests.
 
 ## Quick Start
 
@@ -76,6 +77,7 @@ More sample requests are in [http/buildsage.http](C:/Users/Dossani%20Computer/Do
 - `ai`: provider abstraction, mock provider, Ollama-compatible provider
 - `exception`: centralized API error handling
 - `db/migration`: Flyway schema and seed data
+- `deploy/k8s`: Kubernetes deployment examples for production-style rollout
 
 ## Known Limitations
 
@@ -83,4 +85,6 @@ More sample requests are in [http/buildsage.http](C:/Users/Dossani%20Computer/Do
 - Set `AI_PROVIDER=external` with `EXTERNAL_AI_*` variables to use an OpenAI-compatible chat completions API.
 - Redis/Valkey queue writes are attempted, then the app falls back to in-process async processing if Redis is unavailable.
 - The webhook endpoint expects BuildSage's pipeline-run JSON shape rather than full native GitHub Actions webhook payload translation.
+- Log archive support stores metadata and integrity digests; actual upload to S3/GCS/MinIO is expected to happen in the CI/CD producer or a future storage adapter.
+- Kubernetes manifests are examples and should be wired to managed PostgreSQL, Redis/Valkey, TLS, and secret management before real production use.
 - This is a backend portfolio/reference implementation, not a horizontally sharded production cluster.

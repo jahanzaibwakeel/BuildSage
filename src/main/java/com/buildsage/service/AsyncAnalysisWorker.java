@@ -6,6 +6,7 @@ import com.buildsage.exception.NotFoundException;
 import com.buildsage.repository.AiAnalysisRepository;
 import com.buildsage.repository.BackgroundJobRepository;
 import com.buildsage.repository.PipelineLogRepository;
+import com.buildsage.repository.TeamMemberRepository;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,16 +21,22 @@ public class AsyncAnalysisWorker {
     private final BackgroundJobRepository backgroundJobRepository;
     private final PipelineLogRepository pipelineLogRepository;
     private final AiProvider aiProvider;
+    private final TeamMemberRepository teamMemberRepository;
+    private final NotificationService notificationService;
 
     public AsyncAnalysisWorker(
             AiAnalysisRepository aiAnalysisRepository,
             BackgroundJobRepository backgroundJobRepository,
             PipelineLogRepository pipelineLogRepository,
-            AiProvider aiProvider) {
+            AiProvider aiProvider,
+            TeamMemberRepository teamMemberRepository,
+            NotificationService notificationService) {
         this.aiAnalysisRepository = aiAnalysisRepository;
         this.backgroundJobRepository = backgroundJobRepository;
         this.pipelineLogRepository = pipelineLogRepository;
         this.aiProvider = aiProvider;
+        this.teamMemberRepository = teamMemberRepository;
+        this.notificationService = notificationService;
     }
 
     @Async
@@ -53,11 +60,22 @@ public class AsyncAnalysisWorker {
                     result.confidence(),
                     String.join("\n", result.evidenceLines()));
             job.ifPresent(backgroundJob -> backgroundJob.mark(AnalysisStatus.COMPLETED, "Log analysis completed"));
+            notifyTeamMembers(analysis);
             log.info("Completed AI analysis {}", analysisId);
         } catch (RuntimeException ex) {
             analysis.fail(ex.getMessage());
             job.ifPresent(backgroundJob -> backgroundJob.mark(AnalysisStatus.FAILED, ex.getMessage()));
             log.error("Failed AI analysis {}", analysisId, ex);
         }
+    }
+
+    private void notifyTeamMembers(com.buildsage.domain.AiAnalysis analysis) {
+        var pipelineRun = analysis.getPipelineRun();
+        var teamId = pipelineRun.getProject().getTeam().getId();
+        String message = "Analysis completed for pipeline run %s with %s"
+                .formatted(pipelineRun.getExternalId(), analysis.getFailureType());
+        teamMemberRepository
+                .findByTeamId(teamId)
+                .forEach(member -> notificationService.create(member.getUser().getId(), "ANALYSIS", message));
     }
 }

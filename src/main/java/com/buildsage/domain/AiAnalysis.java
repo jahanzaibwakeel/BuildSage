@@ -87,6 +87,10 @@ public class AiAnalysis extends BaseEntity {
         return status;
     }
 
+    public PipelineRun getPipelineRun() {
+        return pipelineRun;
+    }
+
     public FailureType getFailureType() {
         return failureType;
     }

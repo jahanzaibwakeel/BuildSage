@@ -167,6 +167,13 @@ class PipelineWorkflowIT {
         String runId =
                 objectMapper.readTree(ingestResponse).get("data").get("id").asText();
 
+        mockMvc.perform(get("/api/pipeline-runs/" + runId + "/logs/archive").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.archived").value(true))
+                .andExpect(jsonPath("$.data.storageProvider").value("S3"))
+                .andExpect(jsonPath("$.data.digestAlgorithm").value("SHA-256"))
+                .andExpect(jsonPath("$.data.lineCount").value(3));
+
         mockMvc.perform(post("/api/pipeline-runs/" + runId + "/analyze").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.status").value("QUEUED"));

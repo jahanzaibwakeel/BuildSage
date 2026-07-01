@@ -10,13 +10,18 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 public class NotificationService {
     private final NotificationRepository notificationRepository;
+    private final NotificationDeliveryService notificationDeliveryService;
 
-    public NotificationService(NotificationRepository notificationRepository) {
+    public NotificationService(
+            NotificationRepository notificationRepository, NotificationDeliveryService notificationDeliveryService) {
         this.notificationRepository = notificationRepository;
+        this.notificationDeliveryService = notificationDeliveryService;
     }
 
     @Transactional(readOnly = true)
@@ -33,6 +38,26 @@ public class NotificationService {
                 .orElseThrow(() -> new NotFoundException("Notification not found"));
         notification.markRead();
         return toResponse(notification);
+    }
+
+    @Transactional
+    public NotificationResponse create(UUID userId, String channel, String message) {
+        Notification notification = notificationRepository.save(new Notification(userId, channel, message));
+        dispatchAfterCommit(notification);
+        return toResponse(notification);
+    }
+
+    private void dispatchAfterCommit(Notification notification) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            notificationDeliveryService.deliver(notification);
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                notificationDeliveryService.deliver(notification);
+            }
+        });
     }
 
     private NotificationResponse toResponse(Notification notification) {

@@ -19,6 +19,7 @@ BuildSage uses stateless JWT authentication and Spring Security.
 - Secure error responses without stack traces.
 - Correlation ID response header for incident triage.
 - Signed GitHub-style webhook ingestion using `X-Hub-Signature-256` and `GITHUB_WEBHOOK_SECRET`.
+- Optional notification webhooks are signed with `X-BuildSage-Signature-256` when `NOTIFICATION_WEBHOOK_SECRET` is configured.
 - Idempotency keys for ingestion retry safety.
 - External AI keys are supplied only through environment variables such as `EXTERNAL_AI_API_KEY`.
 
@@ -34,3 +35,14 @@ Rules:
 - Send `X-Hub-Signature-256: sha256=<hex-hmac>`.
 - Send `X-GitHub-Delivery` when available so BuildSage can use it as an idempotency key.
 - Invalid or missing signatures are rejected.
+
+## Notification Webhook Security
+
+Outbound notification webhooks are disabled by default. If enabled, send them only to trusted internal automation or incident-management endpoints.
+
+Rules:
+
+- Configure `NOTIFICATION_WEBHOOK_ENABLED=true`.
+- Configure `NOTIFICATION_WEBHOOK_URL`.
+- Configure `NOTIFICATION_WEBHOOK_SECRET` to sign payloads.
+- Verify `X-BuildSage-Signature-256` on the receiver before processing the event.
