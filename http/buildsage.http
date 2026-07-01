@@ -1,0 +1,31 @@
+@baseUrl = http://localhost:8080
+@projectId = 20000000-0000-0000-0000-000000000001
+
+### Login as admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@buildsage.dev",
+  "password": "password"
+}
+
+### List projects
+GET {{baseUrl}}/api/projects?page=0&size=20
+Authorization: Bearer {{token}}
+
+### Ingest a failed pipeline run
+POST {{baseUrl}}/api/projects/{{projectId}}/pipeline-runs
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "externalId": "gh-1024",
+  "branch": "main",
+  "commitSha": "abc123",
+  "status": "FAILED",
+  "startedAt": "2026-06-30T10:00:00Z",
+  "finishedAt": "2026-06-30T10:05:00Z",
+  "jobs": [{"name": "unit-tests", "stage": "test", "status": "FAILED"}],
+  "logs": ["stage=test", "AssertionError: expected 200 but got 500", "There were failing tests"]
+}

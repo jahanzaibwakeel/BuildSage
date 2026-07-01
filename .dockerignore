@@ -1,0 +1,10 @@
+.git
+.github
+.mvn/apache-maven-*
+target
+*.log
+.env
+.idea
+.vscode
+Dockerfile
+docker-compose.yml
