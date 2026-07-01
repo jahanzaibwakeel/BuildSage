@@ -27,6 +27,7 @@ Content-Type: application/json
   "status": "FAILED",
   "startedAt": "2026-06-30T10:00:00Z",
   "finishedAt": "2026-06-30T10:05:00Z",
+  "logArchiveUri": "s3://buildsage-demo/logs/gh-1024.txt",
   "jobs": [{"name": "unit-tests", "stage": "test", "status": "FAILED"}],
   "logs": ["stage=test", "AssertionError: expected 200 but got 500", "There were failing tests"]
 }
@@ -41,6 +42,14 @@ Authorization: Bearer {{token}}
 
 ### Inspect analysis queue status
 GET {{baseUrl}}/api/pipeline-runs/{{pipelineRunId}}/analysis/queue
+Authorization: Bearer {{token}}
+
+### List notifications
+GET {{baseUrl}}/api/notifications?page=0&size=20
+Authorization: Bearer {{token}}
+
+### Mark notification read
+POST {{baseUrl}}/api/notifications/{{notificationId}}/read
 Authorization: Bearer {{token}}
 
 ### GitHub-style webhook ingestion

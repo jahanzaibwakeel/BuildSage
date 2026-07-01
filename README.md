@@ -21,7 +21,10 @@ Recommended GitHub description: `AI-powered CI/CD intelligence backend in Java 2
 - Idempotent pipeline ingestion through the `Idempotency-Key` header or request body field.
 - GitHub-style signed webhook ingestion with `X-Hub-Signature-256`.
 - Paged log retrieval plus text and line-range log search.
+- Log digest and archive URI metadata for object-storage-backed logs.
 - Async AI analysis queue records with queue status visibility.
+- Mock, Ollama-compatible, and external OpenAI-compatible AI provider modes.
+- In-app notification listing and read-state APIs.
 - Dashboard metrics for run volume, failure rate, deployment risk, and incidents.
 
 ## Quick Start
@@ -77,6 +80,7 @@ More sample requests are in [http/buildsage.http](C:/Users/Dossani%20Computer/Do
 ## Known Limitations
 
 - The default AI provider is deterministic and local-friendly. Set `AI_PROVIDER=ollama` to use an Ollama-compatible API.
+- Set `AI_PROVIDER=external` with `EXTERNAL_AI_*` variables to use an OpenAI-compatible chat completions API.
 - Redis/Valkey queue writes are attempted, then the app falls back to in-process async processing if Redis is unavailable.
 - The webhook endpoint expects BuildSage's pipeline-run JSON shape rather than full native GitHub Actions webhook payload translation.
 - This is a backend portfolio/reference implementation, not a horizontally sharded production cluster.

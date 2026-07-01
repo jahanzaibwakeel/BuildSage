@@ -27,4 +27,24 @@ public class Notification extends BaseEntity {
         this.channel = channel;
         this.message = message;
     }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public boolean isReadFlag() {
+        return readFlag;
+    }
+
+    public void markRead() {
+        this.readFlag = true;
+    }
 }

@@ -33,6 +33,9 @@ Coverage included:
 - Log search API test.
 - Queue status API test.
 - Signed webhook ingestion and bad-signature tests.
+- External AI provider fallback unit test.
+- Notification list and mark-read API test.
+- Log archive URI, digest, and line-count ingestion assertions.
 - PostgreSQL integration via Testcontainers profile.
 
 Future improvements:

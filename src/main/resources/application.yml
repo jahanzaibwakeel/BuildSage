@@ -53,6 +53,10 @@ ai:
   ollama:
     base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
     model: ${OLLAMA_MODEL:llama3.1}
+  external:
+    base-url: ${EXTERNAL_AI_BASE_URL:https://api.openai.com}
+    api-key: ${EXTERNAL_AI_API_KEY:}
+    model: ${EXTERNAL_AI_MODEL:gpt-4o-mini}
 
 webhooks:
   github:

@@ -39,6 +39,15 @@ public class PipelineRun extends BaseEntity {
 
     private Instant finishedAt;
 
+    @Column(length = 1000)
+    private String logArchiveUri;
+
+    @Column(length = 64)
+    private String logDigestSha256;
+
+    @Column(nullable = false)
+    private int logLineCount;
+
     protected PipelineRun() {}
 
     public PipelineRun(
@@ -49,7 +58,10 @@ public class PipelineRun extends BaseEntity {
             String commitSha,
             PipelineStatus status,
             Instant startedAt,
-            Instant finishedAt) {
+            Instant finishedAt,
+            String logArchiveUri,
+            String logDigestSha256,
+            int logLineCount) {
         this.project = project;
         this.externalId = externalId;
         this.idempotencyKey = idempotencyKey;
@@ -58,6 +70,9 @@ public class PipelineRun extends BaseEntity {
         this.status = status;
         this.startedAt = startedAt;
         this.finishedAt = finishedAt;
+        this.logArchiveUri = logArchiveUri;
+        this.logDigestSha256 = logDigestSha256;
+        this.logLineCount = logLineCount;
     }
 
     public Project getProject() {
@@ -90,5 +105,17 @@ public class PipelineRun extends BaseEntity {
 
     public Instant getFinishedAt() {
         return finishedAt;
+    }
+
+    public String getLogArchiveUri() {
+        return logArchiveUri;
+    }
+
+    public String getLogDigestSha256() {
+        return logDigestSha256;
+    }
+
+    public int getLogLineCount() {
+        return logLineCount;
     }
 }

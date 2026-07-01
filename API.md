@@ -38,6 +38,8 @@ Errors use:
 - `GET /api/pipeline-runs/{id}/analysis`
 - `GET /api/pipeline-runs/{id}/analysis/queue`
 - `POST /api/webhooks/github/projects/{id}/pipeline-runs`
+- `GET /api/notifications`
+- `POST /api/notifications/{id}/read`
 - `POST /api/projects/{id}/deployments`
 - `POST /api/deployments/{id}/risk-score`
 - `POST /api/incidents`
@@ -63,6 +65,8 @@ curl -X POST http://localhost:8080/api/projects/{projectId}/pipeline-runs \
   -d '{"externalId":"gh-123","branch":"main","commitSha":"abc","status":"FAILED","startedAt":"2026-07-01T00:00:00Z","logs":["stage=test","AssertionError"]}'
 ```
 
+The request body also accepts `logArchiveUri`, which can point to an object-storage location such as `s3://bucket/key`, `gs://bucket/key`, `minio://bucket/key`, or HTTPS. BuildSage stores this URI, the log line count, and a SHA-256 digest of ingested log lines.
+
 ## Log Search
 
 `GET /api/pipeline-runs/{id}/logs` supports:
@@ -81,3 +85,12 @@ curl -X POST http://localhost:8080/api/projects/{projectId}/pipeline-runs \
 `POST /api/webhooks/github/projects/{id}/pipeline-runs` is not JWT-protected, but it requires `X-Hub-Signature-256`. The signature is `sha256=` plus an HMAC-SHA256 of the raw request body using `GITHUB_WEBHOOK_SECRET`.
 
 `X-GitHub-Delivery` is used as the idempotency key when present.
+
+## Notifications
+
+Users can list and mark their own in-app notifications:
+
+```text
+GET /api/notifications
+POST /api/notifications/{id}/read
+```

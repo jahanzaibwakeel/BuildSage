@@ -20,6 +20,7 @@ BuildSage uses stateless JWT authentication and Spring Security.
 - Correlation ID response header for incident triage.
 - Signed GitHub-style webhook ingestion using `X-Hub-Signature-256` and `GITHUB_WEBHOOK_SECRET`.
 - Idempotency keys for ingestion retry safety.
+- External AI keys are supplied only through environment variables such as `EXTERNAL_AI_API_KEY`.
 
 Demo credentials are documented for local use only and should not be used in production.
 

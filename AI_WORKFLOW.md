@@ -6,6 +6,7 @@ BuildSage keeps AI behind the `AiProvider` interface.
 
 - `mock`: deterministic provider for tests, demos, and offline development.
 - `ollama`: local Ollama-compatible HTTP integration.
+- `external`: OpenAI-compatible `/v1/chat/completions` integration.
 
 No API keys are hardcoded. Configure providers with environment variables:
 
@@ -14,7 +15,12 @@ AI_PROVIDER=mock
 AI_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.1
+EXTERNAL_AI_BASE_URL=https://api.openai.com
+EXTERNAL_AI_API_KEY=...
+EXTERNAL_AI_MODEL=gpt-4o-mini
 ```
+
+The external provider is intentionally configured by environment variables. API keys must not be committed.
 
 ## Log Analysis Output
 

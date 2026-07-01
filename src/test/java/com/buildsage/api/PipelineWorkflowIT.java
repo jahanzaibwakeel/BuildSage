@@ -145,6 +145,8 @@ class PipelineWorkflowIT {
                 Instant.now().toString(),
                 "finishedAt",
                 Instant.now().toString(),
+                "logArchiveUri",
+                "s3://buildsage-demo/logs/gh-queued-1.txt",
                 "jobs",
                 java.util.List.of(Map.of("name", "unit-tests", "stage", "test", "status", "FAILED")),
                 "logs",
@@ -156,6 +158,9 @@ class PipelineWorkflowIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.logArchiveUri").value("s3://buildsage-demo/logs/gh-queued-1.txt"))
+                .andExpect(jsonPath("$.data.logLineCount").value(3))
+                .andExpect(jsonPath("$.data.logDigestSha256").isNotEmpty())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();

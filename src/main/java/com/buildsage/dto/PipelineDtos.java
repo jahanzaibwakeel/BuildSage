@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
@@ -26,6 +27,8 @@ public final class PipelineDtos {
             @NotNull PipelineStatus status,
             @NotNull Instant startedAt,
             Instant finishedAt,
+            @Size(max = 1000) @Pattern(regexp = "^(s3|gs|minio|https?)://.*$", message = "must be a supported URI")
+                    String logArchiveUri,
             @Valid List<JobRequest> jobs,
             @NotEmpty @Size(max = 2000) List<@NotBlank @Size(max = 4000) String> logs) {}
 
@@ -37,6 +40,9 @@ public final class PipelineDtos {
             String branch,
             String commitSha,
             PipelineStatus status,
+            String logArchiveUri,
+            String logDigestSha256,
+            int logLineCount,
             Instant createdAt) {}
 
     public record LogLineResponse(int lineNumber, String content) {}

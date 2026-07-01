@@ -17,6 +17,10 @@ import com.buildsage.repository.PipelineJobRepository;
 import com.buildsage.repository.PipelineLogRepository;
 import com.buildsage.repository.PipelineRunRepository;
 import com.buildsage.security.CurrentUser;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -80,6 +84,7 @@ public class PipelineService {
             }
         }
         var project = projectService.get(projectId);
+        List<String> logs = request.logs();
         PipelineRun run = pipelineRunRepository.save(new PipelineRun(
                 project,
                 request.externalId(),
@@ -88,15 +93,17 @@ public class PipelineService {
                 request.commitSha(),
                 request.status(),
                 request.startedAt(),
-                request.finishedAt()));
+                request.finishedAt(),
+                blankToNull(request.logArchiveUri()),
+                sha256(logs),
+                logs.size()));
         if (request.jobs() != null) {
             request.jobs()
                     .forEach(job ->
                             pipelineJobRepository.save(new PipelineJob(run, job.name(), job.stage(), job.status())));
         }
-        for (int i = 0; i < request.logs().size(); i++) {
-            pipelineLogRepository.save(
-                    new PipelineLog(run, i + 1, request.logs().get(i)));
+        for (int i = 0; i < logs.size(); i++) {
+            pipelineLogRepository.save(new PipelineLog(run, i + 1, logs.get(i)));
         }
         auditService.record(actorId, auditAction, "pipeline_run", run.getId().toString(), run.getExternalId());
         return toResponse(run);
@@ -190,6 +197,9 @@ public class PipelineService {
                 run.getBranch(),
                 run.getCommitSha(),
                 run.getStatus(),
+                run.getLogArchiveUri(),
+                run.getLogDigestSha256(),
+                run.getLogLineCount(),
                 run.getCreatedAt());
     }
 
@@ -215,5 +225,18 @@ public class PipelineService {
             return null;
         }
         return value.trim();
+    }
+
+    private String sha256(List<String> lines) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            for (String line : lines) {
+                digest.update(line.getBytes(StandardCharsets.UTF_8));
+                digest.update((byte) '\n');
+            }
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to compute log digest", ex);
+        }
     }
 }
