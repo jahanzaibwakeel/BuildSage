@@ -15,6 +15,15 @@ Recommended GitHub description: `AI-powered CI/CD intelligence backend in Java 2
 - JUnit 5, Mockito, Testcontainers
 - Docker, Docker Compose, GitHub Actions
 
+## Current Capabilities
+
+- JWT-secured project/team APIs with `ADMIN`, `DEVELOPER`, and `VIEWER` roles.
+- Idempotent pipeline ingestion through the `Idempotency-Key` header or request body field.
+- GitHub-style signed webhook ingestion with `X-Hub-Signature-256`.
+- Paged log retrieval plus text and line-range log search.
+- Async AI analysis queue records with queue status visibility.
+- Dashboard metrics for run volume, failure rate, deployment risk, and incidents.
+
 ## Quick Start
 
 ```bash
@@ -69,4 +78,5 @@ More sample requests are in [http/buildsage.http](C:/Users/Dossani%20Computer/Do
 
 - The default AI provider is deterministic and local-friendly. Set `AI_PROVIDER=ollama` to use an Ollama-compatible API.
 - Redis/Valkey queue writes are attempted, then the app falls back to in-process async processing if Redis is unavailable.
+- The webhook endpoint expects BuildSage's pipeline-run JSON shape rather than full native GitHub Actions webhook payload translation.
 - This is a backend portfolio/reference implementation, not a horizontally sharded production cluster.

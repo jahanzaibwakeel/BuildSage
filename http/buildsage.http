@@ -17,6 +17,7 @@ Authorization: Bearer {{token}}
 ### Ingest a failed pipeline run
 POST {{baseUrl}}/api/projects/{{projectId}}/pipeline-runs
 Authorization: Bearer {{token}}
+Idempotency-Key: gh-delivery-1024
 Content-Type: application/json
 
 {
@@ -28,4 +29,32 @@ Content-Type: application/json
   "finishedAt": "2026-06-30T10:05:00Z",
   "jobs": [{"name": "unit-tests", "stage": "test", "status": "FAILED"}],
   "logs": ["stage=test", "AssertionError: expected 200 but got 500", "There were failing tests"]
+}
+
+### Search logs
+GET {{baseUrl}}/api/pipeline-runs/{{pipelineRunId}}/logs?q=AssertionError&fromLine=1&toLine=100
+Authorization: Bearer {{token}}
+
+### Queue AI analysis
+POST {{baseUrl}}/api/pipeline-runs/{{pipelineRunId}}/analyze
+Authorization: Bearer {{token}}
+
+### Inspect analysis queue status
+GET {{baseUrl}}/api/pipeline-runs/{{pipelineRunId}}/analysis/queue
+Authorization: Bearer {{token}}
+
+### GitHub-style webhook ingestion
+# Compute X-Hub-Signature-256 as sha256=<HMAC_SHA256(raw_body, GITHUB_WEBHOOK_SECRET)>.
+POST {{baseUrl}}/api/webhooks/github/projects/{{projectId}}/pipeline-runs
+X-GitHub-Delivery: gh-delivery-1025
+X-Hub-Signature-256: sha256=replace-with-real-signature
+Content-Type: application/json
+
+{
+  "externalId": "gh-1025",
+  "branch": "main",
+  "commitSha": "def456",
+  "status": "FAILED",
+  "startedAt": "2026-07-01T10:00:00Z",
+  "logs": ["stage=build", "docker build failed"]
 }

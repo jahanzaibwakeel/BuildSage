@@ -36,4 +36,8 @@ Or through Docker Compose:
 docker compose up --build
 ```
 
-`V1__initial_schema.sql` defines tables, constraints, indexes, and foreign keys. `V2__seed_demo_data.sql` adds demo users, a team, a project, and repository metadata.
+`V1__initial_schema.sql` defines tables, constraints, indexes, and foreign keys. `V2__seed_demo_data.sql` adds demo users, a team, a project, and repository metadata. `V3__pipeline_idempotency_and_search.sql` adds pipeline-run idempotency keys, a partial unique index for duplicate protection, and indexes for log search and risk queries.
+
+## Idempotency
+
+`pipeline_runs.idempotency_key` is nullable, but unique per project when present. This lets CI providers safely retry webhook or ingestion calls without duplicating pipeline runs.

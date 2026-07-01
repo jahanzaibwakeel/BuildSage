@@ -7,6 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 public class AnalysisQueueService {
@@ -24,6 +28,7 @@ public class AnalysisQueueService {
         this.asyncAnalysisWorker = asyncAnalysisWorker;
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void queueLogAnalysis(UUID analysisId, UUID runId) {
         backgroundJobRepository.save(new BackgroundJob("LOG_ANALYSIS", analysisId));
         try {
@@ -31,6 +36,23 @@ public class AnalysisQueueService {
         } catch (RuntimeException ex) {
             log.warn("Redis queue unavailable; continuing with in-process async execution");
         }
-        asyncAnalysisWorker.processLogAnalysis(analysisId, runId);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    asyncAnalysisWorker.processLogAnalysis(analysisId, runId);
+                }
+            });
+        } else {
+            asyncAnalysisWorker.processLogAnalysis(analysisId, runId);
+        }
+    }
+
+    public Long analysisQueueDepth() {
+        try {
+            return redisTemplate.opsForList().size("buildsage:analysis:queue");
+        } catch (RuntimeException ex) {
+            return null;
+        }
     }
 }

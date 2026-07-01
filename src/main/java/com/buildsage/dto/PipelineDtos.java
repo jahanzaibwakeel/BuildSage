@@ -20,6 +20,7 @@ public final class PipelineDtos {
 
     public record CreatePipelineRunRequest(
             @NotBlank String externalId,
+            @Size(max = 255) String idempotencyKey,
             @NotBlank String branch,
             @NotBlank String commitSha,
             @NotNull PipelineStatus status,
@@ -32,6 +33,7 @@ public final class PipelineDtos {
             UUID id,
             UUID projectId,
             String externalId,
+            String idempotencyKey,
             String branch,
             String commitSha,
             PipelineStatus status,
@@ -48,4 +50,12 @@ public final class PipelineDtos {
             double confidenceScore,
             String evidenceLines,
             ReviewState reviewState) {}
+
+    public record QueueStatusResponse(
+            UUID analysisId,
+            AnalysisStatus analysisStatus,
+            String jobType,
+            AnalysisStatus jobStatus,
+            String jobMessage,
+            Long redisDepth) {}
 }

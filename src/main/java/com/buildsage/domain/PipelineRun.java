@@ -21,6 +21,9 @@ public class PipelineRun extends BaseEntity {
     @Column(nullable = false)
     private String externalId;
 
+    @Column
+    private String idempotencyKey;
+
     @Column(nullable = false)
     private String branch;
 
@@ -41,6 +44,7 @@ public class PipelineRun extends BaseEntity {
     public PipelineRun(
             Project project,
             String externalId,
+            String idempotencyKey,
             String branch,
             String commitSha,
             PipelineStatus status,
@@ -48,6 +52,7 @@ public class PipelineRun extends BaseEntity {
             Instant finishedAt) {
         this.project = project;
         this.externalId = externalId;
+        this.idempotencyKey = idempotencyKey;
         this.branch = branch;
         this.commitSha = commitSha;
         this.status = status;
@@ -61,6 +66,10 @@ public class PipelineRun extends BaseEntity {
 
     public String getExternalId() {
         return externalId;
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
     }
 
     public String getBranch() {

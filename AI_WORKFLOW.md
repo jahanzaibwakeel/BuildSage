@@ -29,3 +29,17 @@ Stored analysis includes:
 - `reviewState`: defaults to `REVIEW_REQUIRED`
 
 The mock provider uses keyword classification so tests are stable. A real provider should still return structured output and treat AI text as reviewable, not automatically trusted.
+
+## Queue Visibility
+
+When analysis is requested, BuildSage stores:
+
+- an `ai_analyses` record with `QUEUED`
+- a `background_jobs` record with `QUEUED`
+- a Redis/Valkey list entry when Redis is available
+
+The worker updates the background job to `PROCESSING`, then `COMPLETED` or `FAILED`. Clients can inspect the latest queue state with:
+
+```text
+GET /api/pipeline-runs/{id}/analysis/queue
+```

@@ -1,8 +1,10 @@
 package com.buildsage.service;
 
 import com.buildsage.ai.AiProvider;
+import com.buildsage.domain.enums.AnalysisStatus;
 import com.buildsage.exception.NotFoundException;
 import com.buildsage.repository.AiAnalysisRepository;
+import com.buildsage.repository.BackgroundJobRepository;
 import com.buildsage.repository.PipelineLogRepository;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -15,14 +17,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class AsyncAnalysisWorker {
     private static final Logger log = LoggerFactory.getLogger(AsyncAnalysisWorker.class);
     private final AiAnalysisRepository aiAnalysisRepository;
+    private final BackgroundJobRepository backgroundJobRepository;
     private final PipelineLogRepository pipelineLogRepository;
     private final AiProvider aiProvider;
 
     public AsyncAnalysisWorker(
             AiAnalysisRepository aiAnalysisRepository,
+            BackgroundJobRepository backgroundJobRepository,
             PipelineLogRepository pipelineLogRepository,
             AiProvider aiProvider) {
         this.aiAnalysisRepository = aiAnalysisRepository;
+        this.backgroundJobRepository = backgroundJobRepository;
         this.pipelineLogRepository = pipelineLogRepository;
         this.aiProvider = aiProvider;
     }
@@ -34,6 +39,8 @@ public class AsyncAnalysisWorker {
                 .findById(analysisId)
                 .orElseThrow(() -> new NotFoundException("Analysis not found"));
         analysis.markProcessing();
+        var job = backgroundJobRepository.findFirstByTargetIdOrderByCreatedAtDesc(analysisId);
+        job.ifPresent(backgroundJob -> backgroundJob.mark(AnalysisStatus.PROCESSING, "Log analysis started"));
         try {
             var lines = pipelineLogRepository.findTop200ByPipelineRunIdOrderByLineNumberAsc(runId).stream()
                     .map(log -> log.getLineNumber() + ": " + log.getContent())
@@ -45,9 +52,11 @@ public class AsyncAnalysisWorker {
                     result.summary(),
                     result.confidence(),
                     String.join("\n", result.evidenceLines()));
+            job.ifPresent(backgroundJob -> backgroundJob.mark(AnalysisStatus.COMPLETED, "Log analysis completed"));
             log.info("Completed AI analysis {}", analysisId);
         } catch (RuntimeException ex) {
             analysis.fail(ex.getMessage());
+            job.ifPresent(backgroundJob -> backgroundJob.mark(AnalysisStatus.FAILED, ex.getMessage()));
             log.error("Failed AI analysis {}", analysisId, ex);
         }
     }

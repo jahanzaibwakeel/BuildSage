@@ -36,4 +36,20 @@ public class BackgroundJob extends BaseEntity {
         this.status = status;
         this.message = message;
     }
+
+    public String getType() {
+        return type;
+    }
+
+    public UUID getTargetId() {
+        return targetId;
+    }
+
+    public AnalysisStatus getStatus() {
+        return status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }

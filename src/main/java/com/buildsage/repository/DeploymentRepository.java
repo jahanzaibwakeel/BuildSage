@@ -7,4 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DeploymentRepository extends JpaRepository<Deployment, UUID> {
     List<Deployment> findTop10ByProjectIdOrderByCreatedAtDesc(UUID projectId);
+
+    long countByProjectId(UUID projectId);
+
+    long countByProjectIdAndRiskScoreGreaterThanEqual(UUID projectId, int riskScore);
 }

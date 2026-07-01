@@ -29,6 +29,10 @@ Coverage included:
 - Security response envelope test.
 - Viewer and cross-team authorization tests.
 - Queued analysis workflow completion test.
+- Idempotent pipeline ingestion test.
+- Log search API test.
+- Queue status API test.
+- Signed webhook ingestion and bad-signature tests.
 - PostgreSQL integration via Testcontainers profile.
 
 Future improvements:

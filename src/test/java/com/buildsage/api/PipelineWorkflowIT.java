@@ -50,6 +50,86 @@ class PipelineWorkflowIT {
     }
 
     @Test
+    void idempotencyKeyReturnsExistingPipelineRun() throws Exception {
+        String token = login();
+        Map<String, Object> body = Map.of(
+                "externalId",
+                "gh-idempotent-1",
+                "branch",
+                "main",
+                "commitSha",
+                "abc123",
+                "status",
+                "SUCCESS",
+                "startedAt",
+                Instant.now().toString(),
+                "logs",
+                java.util.List.of("build ok"));
+
+        String firstResponse = mockMvc.perform(post("/api/projects/20000000-0000-0000-0000-000000000001/pipeline-runs")
+                        .header("Authorization", "Bearer " + token)
+                        .header("Idempotency-Key", "pipeline-delivery-1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String secondResponse = mockMvc.perform(post("/api/projects/20000000-0000-0000-0000-000000000001/pipeline-runs")
+                        .header("Authorization", "Bearer " + token)
+                        .header("Idempotency-Key", "pipeline-delivery-1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(objectMapper.readTree(secondResponse).get("data").get("id").asText())
+                .isEqualTo(objectMapper
+                        .readTree(firstResponse)
+                        .get("data")
+                        .get("id")
+                        .asText());
+    }
+
+    @Test
+    void searchesLogsByTextAndLineRange() throws Exception {
+        String token = login();
+        Map<String, Object> body = Map.of(
+                "externalId",
+                "gh-search-1",
+                "branch",
+                "main",
+                "commitSha",
+                "abc123",
+                "status",
+                "FAILED",
+                "startedAt",
+                Instant.now().toString(),
+                "logs",
+                java.util.List.of("compile started", "npm ERR dependency conflict", "docker build skipped"));
+
+        String ingestResponse = mockMvc.perform(post("/api/projects/20000000-0000-0000-0000-000000000001/pipeline-runs")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String runId =
+                objectMapper.readTree(ingestResponse).get("data").get("id").asText();
+
+        mockMvc.perform(get("/api/pipeline-runs/" + runId + "/logs?q=dependency&fromLine=2&toLine=2")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalItems").value(1))
+                .andExpect(jsonPath("$.data.items[0].lineNumber").value(2));
+    }
+
+    @Test
     void queuedAnalysisWorkflowCompletesAndPersistsResult() throws Exception {
         String token = login();
         Map<String, Object> body = Map.of(
@@ -99,6 +179,12 @@ class PipelineWorkflowIT {
         });
         assertThat(analysis.get().get("data").get("failureType").asText()).isEqualTo("TEST_FAILURE");
         assertThat(analysis.get().get("data").get("reviewState").asText()).isEqualTo("REVIEW_REQUIRED");
+
+        mockMvc.perform(get("/api/pipeline-runs/" + runId + "/analysis/queue")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.analysisStatus").value("COMPLETED"))
+                .andExpect(jsonPath("$.data.jobType").value("LOG_ANALYSIS"));
     }
 
     private String login() throws Exception {

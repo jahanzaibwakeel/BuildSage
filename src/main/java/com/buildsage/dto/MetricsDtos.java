@@ -4,5 +4,13 @@ public final class MetricsDtos {
     private MetricsDtos() {}
 
     public record ProjectMetrics(
-            long runsLast7Days, long failedRuns, long openIncidents, double deploymentRiskAverage) {}
+            long totalRuns,
+            long runsLast7Days,
+            long failedRuns,
+            long failedRunsLast7Days,
+            double successRate,
+            long openIncidents,
+            long totalDeployments,
+            long highRiskDeployments,
+            double deploymentRiskAverage) {}
 }
